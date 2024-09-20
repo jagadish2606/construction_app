@@ -1,9 +1,6 @@
-from construction_app.models.user import User
+from sqlalchemy.orm import Session
+from ..models import engine
 
-class UserRepository:
-
-    def create_user(self, db, user):
-        db.add(user)
-        db.commit()
-        db.refresh(user)
-        return user
+def get_all_users(db: Session):
+    # Query users from the database (adjust this based on your table structure)
+    return db.query(engine.metadata.tables['users']).all()

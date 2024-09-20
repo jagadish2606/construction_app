@@ -1,5 +1,7 @@
-class Settings:
-    PROJECT_NAME: str = "Adhi Construction"
-    API_VERSION: str = "v1"
+import os
+from dotenv import load_dotenv
 
-settings = Settings()
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+

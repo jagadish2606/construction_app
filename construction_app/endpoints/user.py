@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends
-from construction_app.schemas.user import UserCreate
+from fastapi import APIRouter
 
 router = APIRouter()
 
-@router.post("/users/")
-def create_user(user: UserCreate):
-    return {"user": user}
+@router.get("/users")
+def get_users():
+    return {"message": "List of users"}
