@@ -19,7 +19,7 @@
 
 from sqlmodel import create_engine, Session
 from sqlalchemy.pool import NullPool
-from core.config.config import DATABASE_URL
+from construction_app.core.config import DATABASE_URL
 
 def get_db():
     engine = create_engine(DATABASE_URL, pool_pre_ping=True, poolclass=NullPool)

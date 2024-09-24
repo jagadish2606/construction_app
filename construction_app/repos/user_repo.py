@@ -1,6 +1,9 @@
-from sqlalchemy.orm import Session
-from ..models import engine
+from sqlalchemy import select
+from sqlmodel import Session
+from construction_app.models.models import Users  # Assuming you have a Users model
 
-def get_all_users(db: Session):
-    # Query users from the database (adjust this based on your table structure)
-    return db.query(engine.metadata.tables['users']).all()
+async def get_users(db: Session):
+    print(f"print@1")
+    query = select(Users).where(Users.isactive == True)
+    results = db.exec(query).all()
+    return results

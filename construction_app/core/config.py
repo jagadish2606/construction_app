@@ -4,18 +4,24 @@
 # load_dotenv()
 
 # DATABASE_URL = os.getenv("DATABASE_URL")
-
 import os
 from dotenv import load_dotenv
-from os import getenv
 
 load_dotenv()
 
-# code running envirnment
-ENVIRONMENT = getenv("ENVIRONMENT")
+# Code running environment
+ENVIRONMENT = os.getenv("ENVIRONMENT")
 
-# global database URL
-DATABASE_URL = getenv("DATABASE_URL")
+# Global database URL
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# model_gen_file_name
-MODEL_GEN_FILE_NAME = getenv("MODEL_GEN_FILE_NAME")
+# Model generation file name
+MODEL_GEN_FILE_NAME = os.getenv("MODEL_GEN_FILE_NAME")
+
+# Debugging statements
+print(f"ENVIRONMENT: {ENVIRONMENT}")
+print(f"DATABASE_URL: {DATABASE_URL}")
+print(f"MODEL_GEN_FILE_NAME: {MODEL_GEN_FILE_NAME}")
+
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is not set in the .env file")

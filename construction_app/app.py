@@ -1,7 +1,11 @@
 from fastapi import FastAPI
+import os
+from dotenv import load_dotenv
 from construction_app.endpoints import user
 
 from construction_app.core.config import ENVIRONMENT, DATABASE_URL
+from construction_app.models import models
+load_dotenv()
 
 app = FastAPI()
 
@@ -10,7 +14,3 @@ app = FastAPI()
 # MODEL_GEN_FILE_NAME = os.getenv("MODEL_GEN_FILE_NAME")
 # Include your endpoints
 app.include_router(user.router)
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to Adhi Construction API"}
