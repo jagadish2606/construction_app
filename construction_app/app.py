@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 import os
 from dotenv import load_dotenv
+from construction_app.core.utils.middlewares import PaginationMiddleWare
 from construction_app.endpoints.user import router as user_router
+from construction_app.endpoints.employee import router as employee_router
 
 from construction_app.core.config import ENVIRONMENT, DATABASE_URL
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,3 +30,10 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 app.include_router(user_router, prefix='/users')
+app.include_router(employee_router, prefix='/Employee')  # Fixed typo
+
+
+
+app.add_middleware(PaginationMiddleWare)
+
+
