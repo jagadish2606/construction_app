@@ -50,7 +50,7 @@ async def employee_all(db: Session = Depends(get_db),
      return await get_roles_list(db, params.page, params.per_page, employee_filter)
  
 
-@router.post("role/add", status_code=200, tags=["Roles"],
+@router.post("/role/add", status_code=200, tags=["Roles"],
              description="Roles add API", response_model=ResponseModel)
 @version(1)
 async def add_roles(data: CreateRoles, db: Session = Depends(get_db)):

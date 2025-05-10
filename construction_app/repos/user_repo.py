@@ -26,7 +26,7 @@ async def get_users(db: Session):
 
 
 async def find_user_by_mail(db: Session, users: UserLogin) -> Optional[Users]:
-    statement = select(Users).where(Users.email == users.username, Users.password == users.password)
+    statement = select(Users).where(Users.email == users.email, Users.password == users.password)
     user = db.exec(statement).first()
     print(f"users in repo {user}")
     if not user:
@@ -40,7 +40,7 @@ async def find_user_by_mail(db: Session, users: UserLogin) -> Optional[Users]:
 async def get_roles_list(db: Session, page: int = Query(1, ge=1),
                              per_page: int = Query(100, ge=0),
                              role_filter: RolesFilter = FilterDepends(RolesFilter)):
-    query = (select(Roles.name, Roles.description, Roles.email, 
+    query = (select(Roles.name, Roles.description, 
                    Roles.createddate, Roles.roleid)
                 .where(Roles.isactive == True)
                 .order_by(desc(Roles.createddate)))
@@ -66,7 +66,7 @@ async def roles_create( data: CreateRoles, db: Session):
     role_obj = mapper.to(Roles).map(data)
     role_obj.roleid = uuid.uuid4()
     role_obj.isactive = True
-    role_obj.createddate = datetime.datetime.now()
+    role_obj.createddate = datetime.now()
     role_obj.createdby = '58b8d829-945f-4c0c-a712-c37d68cd39d5'
     db.add(role_obj)
     db.commit()

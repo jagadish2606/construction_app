@@ -43,7 +43,7 @@ async def employee_create( data: CreateEmployee, db: Session):
     employee_obj = mapper.to(Employees).map(data)
     employee_obj.employeeid = uuid.uuid4()
     employee_obj.isactive = True
-    employee_obj.createddate = datetime.datetime.now()
+    employee_obj.createddate = datetime.now()
     employee_obj.createdby = '58b8d829-945f-4c0c-a712-c37d68cd39d5'
     db.add(employee_obj)
     db.commit()

@@ -16,6 +16,7 @@ class UserListResponse(SQLModel):
     
 class UserLogin(SQLModel):
     username: str 
+    email: str
     password: str
     
     
