@@ -8,7 +8,8 @@ from sqlmodel import Session
 from automapper import mapper
 from construction_app.core.utils.pagination import paginate
 from construction_app.models.models import Roles, Users
-from construction_app.schemas.user import CreateRoles, CreateUser, RolesFilter, UserList, UserListResponse, UserLogin  # Assuming you have a Users model
+from construction_app.schemas.user import CreateRoles, CreateUser, RolesFilter, UserList
+from construction_app.schemas.user import UserListResponse, UserLogin  # Assuming you have a Users model
 
 async def get_users(db: Session):
     # print(f"print@1")
@@ -74,9 +75,9 @@ async def roles_create( data: CreateRoles, db: Session):
     return role_obj
 
 
-async def get_user_by_name(name: str, db: Session):
+async def get_user_by_email(email: str, db: Session):
 
-    query = (select(Users).where(Users.firstname == name))
+    query = (select(Users).where(Users.email == email))
     result = db.exec(query).first()
     return result
 
@@ -84,7 +85,7 @@ async def get_user_by_name(name: str, db: Session):
 
 async def users_create( data: CreateUser, db: Session):
     
-    old_user = await get_user_by_name(data.firstname, db)
+    old_user = await get_user_by_email(data.email, db)
     if old_user:
             return 1
     
