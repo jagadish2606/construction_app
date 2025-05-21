@@ -5,12 +5,12 @@ from pydantic import BaseModel
 from datetime import datetime
 from fastapi_filter.contrib.sqlalchemy import Filter
 from typing import Optional, List
-from construction_app.models.models import Roles as Role
+from construction_app.models.models import Role
 
 class UserListResponse(SQLModel):
     userid: uuid.UUID
-    firstname: str
-    lastname: str
+    username: str
+    phonenumber: str
     email: str
     
     
@@ -22,8 +22,8 @@ class UserLogin(SQLModel):
     
 class UserList(SQLModel):
     userid: uuid.UUID
-    firstname: str
-    lastname: str
+    username: str
+    usertype: str
     email: str
     roleid:  Optional[uuid.UUID] = None
     createddate: datetime
@@ -57,8 +57,8 @@ class CreateRoles(SQLModel):
     
     
 class CreateUser(SQLModel):
-    firstname: str
-    lastname: str
+    username: str
+    phonenumber: str
     email: str
     password: str 
     

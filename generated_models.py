@@ -6,327 +6,206 @@ from sqlalchemy import Boolean, Column, Date, DateTime, ForeignKeyConstraint, In
 from sqlalchemy.orm.base import Mapped
 from sqlmodel import Field, Relationship, SQLModel
 
-class Customers(SQLModel, table=True):
+class Customer(SQLModel, table=True):
     __table_args__ = (
-        PrimaryKeyConstraint('customerid', name='customers_pkey'),
-        UniqueConstraint('email', name='customers_email_key')
+        PrimaryKeyConstraint('customerid', name='customer_pkey'),
     )
 
-    customerid: UUID = Field(sa_column=mapped_column('customerid', Uuid, server_default=text('uuid_generate_v4()')))
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
-    email: Optional[str] = Field(default=None, sa_column=mapped_column('email', String(255)))
-    phonenumber: Optional[str] = Field(default=None, sa_column=mapped_column('phonenumber', String(20)))
+    customerid: UUID = Field(sa_column=mapped_column('customerid', Uuid, server_default=text('gen_random_uuid()')))
+    name: str = Field(sa_column=mapped_column('name', String(100), nullable=False))
+    email: Optional[str] = Field(default=None, sa_column=mapped_column('email', String(100)))
+    phone: Optional[str] = Field(default=None, sa_column=mapped_column('phone', String(15)))
     address: Optional[str] = Field(default=None, sa_column=mapped_column('address', Text))
-    paidinadvance: Optional[Decimal] = Field(default=None, sa_column=mapped_column('paidinadvance', Numeric(10, 2), server_default=text('0')))
-    balance: Optional[Decimal] = Field(default=None, sa_column=mapped_column('balance', Numeric(10, 2), server_default=text('0')))
-    paid: Optional[Decimal] = Field(default=None, sa_column=mapped_column('paid', Numeric(10, 2), server_default=text('0')))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
+    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
+
+    projects: List['Projects'] = Relationship(back_populates='customer')
+    payments: List['Payments'] = Relationship(back_populates='customer')
+
+
+class Employee(SQLModel, table=True):
+    __table_args__ = (
+        ForeignKeyConstraint(['roleid'], ['role.roleid'], name='employee_roleid_fkey'),
+        ForeignKeyConstraint(['teamid'], ['team.teamid'], name='employee_teamid_fkey'),
+        ForeignKeyConstraint(['userid'], ['users.userid'], name='employee_userid_fkey'),
+        PrimaryKeyConstraint('employeeid', name='employee_pkey')
+    )
+
+    employeeid: UUID = Field(sa_column=mapped_column('employeeid', Uuid, server_default=text('gen_random_uuid()')))
+    fullname: str = Field(sa_column=mapped_column('fullname', String(100), nullable=False))
+    userid: Optional[UUID] = Field(default=None, sa_column=mapped_column('userid', Uuid))
+    phonenumber: Optional[str] = Field(default=None, sa_column=mapped_column('phonenumber', String(15)))
+    email: Optional[str] = Field(default=None, sa_column=mapped_column('email', String(100)))
+    teamid: Optional[UUID] = Field(default=None, sa_column=mapped_column('teamid', Uuid))
+    roleid: Optional[UUID] = Field(default=None, sa_column=mapped_column('roleid', Uuid))
+    joineddate: Optional[date] = Field(default=None, sa_column=mapped_column('joineddate', Date))
+    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
     isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    payments: List['Payments'] = Relationship(back_populates='customers')
-    projects: List['Projects'] = Relationship(back_populates='customers')
+    role: Optional['Role'] = Relationship(back_populates='employee')
+    team: Optional['Team'] = Relationship(back_populates='employee')
+    users: Optional['Users'] = Relationship(back_populates='employee')
+    team_: List['Team'] = Relationship(back_populates='employee_')
 
 
-class Roles(SQLModel, table=True):
+class Role(SQLModel, table=True):
     __table_args__ = (
-        PrimaryKeyConstraint('roleid', name='roles_pkey'),
-        UniqueConstraint('name', name='roles_name_key')
+        PrimaryKeyConstraint('roleid', name='role_pkey'),
+        UniqueConstraint('rolename', name='role_rolename_key')
     )
 
-    roleid: UUID = Field(sa_column=mapped_column('roleid', Uuid, server_default=text('uuid_generate_v4()')))
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
+    roleid: UUID = Field(sa_column=mapped_column('roleid', Uuid, server_default=text('gen_random_uuid()')))
+    rolename: str = Field(sa_column=mapped_column('rolename', String(50), nullable=False))
     description: Optional[str] = Field(default=None, sa_column=mapped_column('description', Text))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    users: List['Users'] = Relationship(back_populates='roles')
+    employee: List['Employee'] = Relationship(back_populates='role')
+    users: List['Users'] = Relationship(back_populates='role')
 
 
-class Teams(SQLModel, table=True):
+class Team(SQLModel, table=True):
     __table_args__ = (
-        PrimaryKeyConstraint('teamid', name='teams_pkey'),
+        ForeignKeyConstraint(['leademployeeid'], ['employee.employeeid'], name='fk_team_leademployee'),
+        PrimaryKeyConstraint('teamid', name='team_pkey')
     )
 
-    teamid: UUID = Field(sa_column=mapped_column('teamid', Uuid, server_default=text('uuid_generate_v4()')))
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
-    specialization: Optional[str] = Field(default=None, sa_column=mapped_column('specialization', String(255)))
+    teamid: UUID = Field(sa_column=mapped_column('teamid', Uuid, server_default=text('gen_random_uuid()')))
+    teamname: str = Field(sa_column=mapped_column('teamname', String(100), nullable=False))
+    description: Optional[str] = Field(default=None, sa_column=mapped_column('description', Text))
+    leademployeeid: Optional[UUID] = Field(default=None, sa_column=mapped_column('leademployeeid', Uuid))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    projectteams: List['Projectteams'] = Relationship(back_populates='teams')
+    employee: List['Employee'] = Relationship(back_populates='team')
+    employee_: Optional['Employee'] = Relationship(back_populates='team_')
+    projects: List['Projects'] = Relationship(back_populates='team')
 
 
-class Vendors(SQLModel, table=True):
+class Vendor(SQLModel, table=True):
     __table_args__ = (
-        PrimaryKeyConstraint('vendorid', name='vendors_pkey'),
+        PrimaryKeyConstraint('vendorid', name='vendor_pkey'),
     )
 
-    vendorid: UUID = Field(sa_column=mapped_column('vendorid', Uuid, server_default=text('uuid_generate_v4()')))
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
-    contactemail: Optional[str] = Field(default=None, sa_column=mapped_column('contactemail', String(255)))
-    contactphone: Optional[str] = Field(default=None, sa_column=mapped_column('contactphone', String(20)))
+    vendorid: UUID = Field(sa_column=mapped_column('vendorid', Uuid, server_default=text('gen_random_uuid()')))
+    name: str = Field(sa_column=mapped_column('name', String(100), nullable=False))
+    email: Optional[str] = Field(default=None, sa_column=mapped_column('email', String(100)))
+    phone: Optional[str] = Field(default=None, sa_column=mapped_column('phone', String(15)))
     address: Optional[str] = Field(default=None, sa_column=mapped_column('address', Text))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    materials: List['Materials'] = Relationship(back_populates='vendors')
-    vendorpayments: List['Vendorpayments'] = Relationship(back_populates='vendors')
-
-
-class Materials(SQLModel, table=True):
-    __table_args__ = (
-        ForeignKeyConstraint(['vendorid'], ['vendors.vendorid'], name='materials_vendorid_fkey'),
-        PrimaryKeyConstraint('materialid', name='materials_pkey')
-    )
-
-    materialid: UUID = Field(sa_column=mapped_column('materialid', Uuid, server_default=text('uuid_generate_v4()')))
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
-    vendorid: Optional[UUID] = Field(default=None, sa_column=mapped_column('vendorid', Uuid))
-    unitprice: Optional[Decimal] = Field(default=None, sa_column=mapped_column('unitprice', Numeric(10, 2)))
-    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
-
-    vendors: Optional['Vendors'] = Relationship(back_populates='materials')
-
-
-class Payments(SQLModel, table=True):
-    __table_args__ = (
-        ForeignKeyConstraint(['customerid'], ['customers.customerid'], name='payments_customerid_fkey'),
-        PrimaryKeyConstraint('paymentid', name='payments_pkey')
-    )
-
-    paymentid: UUID = Field(sa_column=mapped_column('paymentid', Uuid, server_default=text('uuid_generate_v4()')))
-    amount: Decimal = Field(sa_column=mapped_column('amount', Numeric(10, 2), nullable=False))
-    paymentdate: date = Field(sa_column=mapped_column('paymentdate', Date, nullable=False))
-    customerid: Optional[UUID] = Field(default=None, sa_column=mapped_column('customerid', Uuid))
-    paymentmethod: Optional[str] = Field(default=None, sa_column=mapped_column('paymentmethod', String(255)))
-    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
-
-    customers: Optional['Customers'] = Relationship(back_populates='payments')
+    materials: List['Materials'] = Relationship(back_populates='vendor')
+    payments: List['Payments'] = Relationship(back_populates='vendor')
 
 
 class Projects(SQLModel, table=True):
     __table_args__ = (
-        ForeignKeyConstraint(['customerid'], ['customers.customerid'], name='projects_customerid_fkey'),
+        ForeignKeyConstraint(['customerid'], ['customer.customerid'], name='projects_customerid_fkey'),
+        ForeignKeyConstraint(['teamid'], ['team.teamid'], name='projects_teamid_fkey'),
         PrimaryKeyConstraint('projectid', name='projects_pkey')
     )
 
-    projectid: UUID = Field(sa_column=mapped_column('projectid', Uuid, server_default=text('uuid_generate_v4()')))
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
+    projectid: UUID = Field(sa_column=mapped_column('projectid', Uuid, server_default=text('gen_random_uuid()')))
+    name: str = Field(sa_column=mapped_column('name', String(100), nullable=False))
     description: Optional[str] = Field(default=None, sa_column=mapped_column('description', Text))
     customerid: Optional[UUID] = Field(default=None, sa_column=mapped_column('customerid', Uuid))
-    sitelocation: Optional[str] = Field(default=None, sa_column=mapped_column('sitelocation', Text))
-    budget: Optional[Decimal] = Field(default=None, sa_column=mapped_column('budget', Numeric(15, 2)))
+    teamid: Optional[UUID] = Field(default=None, sa_column=mapped_column('teamid', Uuid))
     startdate: Optional[date] = Field(default=None, sa_column=mapped_column('startdate', Date))
     enddate: Optional[date] = Field(default=None, sa_column=mapped_column('enddate', Date))
-    progress: Optional[str] = Field(default=None, sa_column=mapped_column('progress', String(255)))
+    status: Optional[str] = Field(default=None, sa_column=mapped_column('status', String(50)))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    customers: Optional['Customers'] = Relationship(back_populates='projects')
-    plans: List['Plans'] = Relationship(back_populates='projects')
-    projectpayments: List['Projectpayments'] = Relationship(back_populates='projects')
-    projectstatus: List['Projectstatus'] = Relationship(back_populates='projects')
-    projectteams: List['Projectteams'] = Relationship(back_populates='projects')
-    vendorpayments: List['Vendorpayments'] = Relationship(back_populates='projects')
-    empworklog: List['Empworklog'] = Relationship(back_populates='projects')
+    customer: Optional['Customer'] = Relationship(back_populates='projects')
+    team: Optional['Team'] = Relationship(back_populates='projects')
+    materials: List['Materials'] = Relationship(back_populates='projects')
+    payments: List['Payments'] = Relationship(back_populates='projects')
 
 
 class Users(SQLModel, table=True):
     __table_args__ = (
-        ForeignKeyConstraint(['roleid'], ['roles.roleid'], name='users_roleid_fkey'),
+        ForeignKeyConstraint(['roleid'], ['role.roleid'], name='users_roleid_fkey'),
         PrimaryKeyConstraint('userid', name='users_pkey'),
-        UniqueConstraint('email', name='users_email_key')
+        UniqueConstraint('email', name='users_email_key'),
+        UniqueConstraint('username', name='users_username_key')
     )
 
-    userid: UUID = Field(sa_column=mapped_column('userid', Uuid, server_default=text('uuid_generate_v4()')))
-    firstname: str = Field(sa_column=mapped_column('firstname', String(255), nullable=False))
-    lastname: str = Field(sa_column=mapped_column('lastname', String(255), nullable=False))
-    email: str = Field(sa_column=mapped_column('email', String(255), nullable=False))
-    password: str = Field(sa_column=mapped_column('password', String(255), nullable=False))
+    userid: UUID = Field(sa_column=mapped_column('userid', Uuid, server_default=text('gen_random_uuid()')))
+    username: str = Field(sa_column=mapped_column('username', String(50), nullable=False))
+    email: str = Field(sa_column=mapped_column('email', String(100), nullable=False))
+    password: str = Field(sa_column=mapped_column('password', String(100), nullable=False))
+    passwordhash: Optional[str] = Field(default=None, sa_column=mapped_column('passwordhash', Text))
     roleid: Optional[UUID] = Field(default=None, sa_column=mapped_column('roleid', Uuid))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
+    phonenumber: Optional[str] = Field(default=None, sa_column=mapped_column('phonenumber', String(15)))
+    usertype: Optional[str] = Field(default=None, sa_column=mapped_column('usertype', String(50)))
     isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    roles: Optional['Roles'] = Relationship(back_populates='users')
-    employees: List['Employees'] = Relationship(back_populates='users')
+    employee: List['Employee'] = Relationship(back_populates='users')
+    role: Optional['Role'] = Relationship(back_populates='users')
 
 
-class Employees(SQLModel, table=True):
+class Materials(SQLModel, table=True):
     __table_args__ = (
-        ForeignKeyConstraint(['userid'], ['users.userid'], name='employees_userid_fkey'),
-        PrimaryKeyConstraint('employeeid', name='employees_pkey'),
-        UniqueConstraint('email', name='employees_email_key')
+        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='materials_projectid_fkey'),
+        ForeignKeyConstraint(['vendorid'], ['vendor.vendorid'], name='materials_vendorid_fkey'),
+        PrimaryKeyConstraint('materialid', name='materials_pkey')
     )
 
-    employeeid: UUID = Field(sa_column=mapped_column('employeeid', Uuid, server_default=text('uuid_generate_v4()')))
-    firstname: str = Field(sa_column=mapped_column('firstname', String(255), nullable=False))
-    lastname: str = Field(sa_column=mapped_column('lastname', String(255), nullable=False))
-    email: Optional[str] = Field(default=None, sa_column=mapped_column('email', String(255)))
-    phonenumber: Optional[str] = Field(default=None, sa_column=mapped_column('phonenumber', String(20)))
-    position: Optional[str] = Field(default=None, sa_column=mapped_column('position', String(255)))
-    salary: Optional[Decimal] = Field(default=None, sa_column=mapped_column('salary', Numeric(10, 2)))
-    advancegetamount: Optional[Decimal] = Field(default=None, sa_column=mapped_column('advancegetamount', Numeric(10, 2), server_default=text('0')))
-    userid: Optional[UUID] = Field(default=None, sa_column=mapped_column('userid', Uuid))
-    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
-
-    users: Optional['Users'] = Relationship(back_populates='employees')
-    empworklog: List['Empworklog'] = Relationship(back_populates='employees')
-
-
-class Plans(SQLModel, table=True):
-    __table_args__ = (
-        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='plans_projectid_fkey'),
-        PrimaryKeyConstraint('planid', name='plans_pkey')
-    )
-
-    planid: UUID = Field(sa_column=mapped_column('planid', Uuid, server_default=text('uuid_generate_v4()')))
-    name: str = Field(sa_column=mapped_column('name', String(255), nullable=False))
+    materialid: UUID = Field(sa_column=mapped_column('materialid', Uuid, server_default=text('gen_random_uuid()')))
+    name: str = Field(sa_column=mapped_column('name', String(100), nullable=False))
     description: Optional[str] = Field(default=None, sa_column=mapped_column('description', Text))
-    projectid: Optional[UUID] = Field(default=None, sa_column=mapped_column('projectid', Uuid))
-    blueprint: Optional[str] = Field(default=None, sa_column=mapped_column('blueprint', Text))
-    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
-
-    projects: Optional['Projects'] = Relationship(back_populates='plans')
-
-
-class Projectpayments(SQLModel, table=True):
-    __table_args__ = (
-        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='projectpayments_projectid_fkey'),
-        PrimaryKeyConstraint('projectpaymentid', name='projectpayments_pkey')
-    )
-
-    projectpaymentid: UUID = Field(sa_column=mapped_column('projectpaymentid', Uuid, server_default=text('uuid_generate_v4()')))
-    amount: Decimal = Field(sa_column=mapped_column('amount', Numeric(10, 2), nullable=False))
-    paymentdate: date = Field(sa_column=mapped_column('paymentdate', Date, nullable=False))
-    projectid: Optional[UUID] = Field(default=None, sa_column=mapped_column('projectid', Uuid))
-    paymentmethod: Optional[str] = Field(default=None, sa_column=mapped_column('paymentmethod', String(255)))
-    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
-
-    projects: Optional['Projects'] = Relationship(back_populates='projectpayments')
-
-
-class Projectstatus(SQLModel, table=True):
-    __table_args__ = (
-        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='projectstatus_projectid_fkey'),
-        PrimaryKeyConstraint('projectstatusid', name='projectstatus_pkey')
-    )
-
-    projectstatusid: UUID = Field(sa_column=mapped_column('projectstatusid', Uuid, server_default=text('uuid_generate_v4()')))
-    status: str = Field(sa_column=mapped_column('status', String(255), nullable=False))
-    projectid: Optional[UUID] = Field(default=None, sa_column=mapped_column('projectid', Uuid))
-    comments: Optional[str] = Field(default=None, sa_column=mapped_column('comments', Text))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
-
-    projects: Optional['Projects'] = Relationship(back_populates='projectstatus')
-
-
-class Projectteams(SQLModel, table=True):
-    __table_args__ = (
-        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='projectteams_projectid_fkey'),
-        ForeignKeyConstraint(['teamid'], ['teams.teamid'], name='projectteams_teamid_fkey'),
-        PrimaryKeyConstraint('projectid', 'teamid', name='projectteams_pkey')
-    )
-
-    projectid: UUID = Field(sa_column=mapped_column('projectid', Uuid, nullable=False))
-    teamid: UUID = Field(sa_column=mapped_column('teamid', Uuid, nullable=False))
-    assigneddate: Optional[date] = Field(default=None, sa_column=mapped_column('assigneddate', Date))
-    createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
-    updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
-
-    projects: Optional['Projects'] = Relationship(back_populates='projectteams')
-    teams: Optional['Teams'] = Relationship(back_populates='projectteams')
-
-
-class Vendorpayments(SQLModel, table=True):
-    __table_args__ = (
-        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='vendorpayments_projectid_fkey'),
-        ForeignKeyConstraint(['vendorid'], ['vendors.vendorid'], name='vendorpayments_vendorid_fkey'),
-        PrimaryKeyConstraint('vendorpaymentid', name='vendorpayments_pkey')
-    )
-
-    vendorpaymentid: UUID = Field(sa_column=mapped_column('vendorpaymentid', Uuid, server_default=text('uuid_generate_v4()')))
-    amount: Decimal = Field(sa_column=mapped_column('amount', Numeric(10, 2), nullable=False))
-    paymentdate: date = Field(sa_column=mapped_column('paymentdate', Date, nullable=False))
+    quantity: Optional[int] = Field(default=None, sa_column=mapped_column('quantity', Integer, server_default=text('0')))
+    unitprice: Optional[Decimal] = Field(default=None, sa_column=mapped_column('unitprice', Numeric(10, 2)))
     vendorid: Optional[UUID] = Field(default=None, sa_column=mapped_column('vendorid', Uuid))
     projectid: Optional[UUID] = Field(default=None, sa_column=mapped_column('projectid', Uuid))
-    paymentmethod: Optional[str] = Field(default=None, sa_column=mapped_column('paymentmethod', String(255)))
-    status: Optional[str] = Field(default=None, sa_column=mapped_column('status', String(255), server_default=text("'Pending'::character varying")))
-    paidinadvance: Optional[Decimal] = Field(default=None, sa_column=mapped_column('paidinadvance', Numeric(10, 2), server_default=text('0')))
-    balance: Optional[Decimal] = Field(default=None, sa_column=mapped_column('balance', Numeric(10, 2), server_default=text('0')))
-    paid: Optional[Decimal] = Field(default=None, sa_column=mapped_column('paid', Numeric(10, 2), server_default=text('0')))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    projects: Optional['Projects'] = Relationship(back_populates='vendorpayments')
-    vendors: Optional['Vendors'] = Relationship(back_populates='vendorpayments')
+    projects: Optional['Projects'] = Relationship(back_populates='materials')
+    vendor: Optional['Vendor'] = Relationship(back_populates='materials')
 
 
-class Empworklog(SQLModel, table=True):
+class Payments(SQLModel, table=True):
     __table_args__ = (
-        ForeignKeyConstraint(['employeeid'], ['employees.employeeid'], name='empworklog_employeeid_fkey'),
-        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='empworklog_projectid_fkey'),
-        PrimaryKeyConstraint('worklogid', name='empworklog_pkey')
+        ForeignKeyConstraint(['customerid'], ['customer.customerid'], name='payments_customerid_fkey'),
+        ForeignKeyConstraint(['projectid'], ['projects.projectid'], name='payments_projectid_fkey'),
+        ForeignKeyConstraint(['vendorid'], ['vendor.vendorid'], name='payments_vendorid_fkey'),
+        PrimaryKeyConstraint('paymentid', name='payments_pkey')
     )
 
-    worklogid: UUID = Field(sa_column=mapped_column('worklogid', Uuid, server_default=text('uuid_generate_v4()')))
-    workhours: int = Field(sa_column=mapped_column('workhours', Integer, nullable=False))
-    workdate: date = Field(sa_column=mapped_column('workdate', Date, nullable=False))
-    employeeid: Optional[UUID] = Field(default=None, sa_column=mapped_column('employeeid', Uuid))
+    paymentid: UUID = Field(sa_column=mapped_column('paymentid', Uuid, server_default=text('gen_random_uuid()')))
+    amount: Decimal = Field(sa_column=mapped_column('amount', Numeric(12, 2), nullable=False))
+    paymentdate: date = Field(sa_column=mapped_column('paymentdate', Date, nullable=False))
+    paymenttype: Optional[str] = Field(default=None, sa_column=mapped_column('paymenttype', String(50)))
+    customerid: Optional[UUID] = Field(default=None, sa_column=mapped_column('customerid', Uuid))
+    vendorid: Optional[UUID] = Field(default=None, sa_column=mapped_column('vendorid', Uuid))
     projectid: Optional[UUID] = Field(default=None, sa_column=mapped_column('projectid', Uuid))
-    taskdescription: Optional[str] = Field(default=None, sa_column=mapped_column('taskdescription', Text))
+    remarks: Optional[str] = Field(default=None, sa_column=mapped_column('remarks', Text))
     createddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('createddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
     createdby: Optional[UUID] = Field(default=None, sa_column=mapped_column('createdby', Uuid))
-    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime, server_default=text('CURRENT_TIMESTAMP')))
+    updateddate: Optional[datetime] = Field(default=None, sa_column=mapped_column('updateddate', DateTime))
     updatedby: Optional[UUID] = Field(default=None, sa_column=mapped_column('updatedby', Uuid))
-    isactive: Optional[bool] = Field(default=None, sa_column=mapped_column('isactive', Boolean, server_default=text('true')))
 
-    employees: Optional['Employees'] = Relationship(back_populates='empworklog')
-    projects: Optional['Projects'] = Relationship(back_populates='empworklog')
+    customer: Optional['Customer'] = Relationship(back_populates='payments')
+    projects: Optional['Projects'] = Relationship(back_populates='payments')
+    vendor: Optional['Vendor'] = Relationship(back_populates='payments')

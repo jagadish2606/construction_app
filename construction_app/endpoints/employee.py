@@ -8,9 +8,9 @@ from starlette.status import HTTP_200_OK, HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 from construction_app.core.database.db import get_db
 from construction_app.core.utils.pagination import PaginatedParams
 from construction_app.core.utils.pagination.schemas import PaginatedResponse
-from construction_app.repos.employee_repo import employee_create, get_employees_list
+from construction_app.repos.employee_repo import employee_create, employee_edit, get_employees_list
 from construction_app.schemas.core import ResponseModel
-from construction_app.schemas.employee import CreateEmployee, EmployeeFilter, EmployeeList
+from construction_app.schemas.employee import CreateEmployee, EditEmployee, EmployeeFilter, EmployeeList
 
 router = APIRouter()
 
@@ -40,6 +40,24 @@ async def add_employee(data: CreateEmployee, db: Session = Depends(get_db)):
             response = ResponseModel(status=409, message='Employee alreay exist')
             return JSONResponse(jsonable_encoder(response), status_code=HTTP_409_CONFLICT) 
             
+        response = ResponseModel(data=emp_obj)
+        return JSONResponse(jsonable_encoder(response), status_code=HTTP_200_OK)
+    
+    response = ResponseModel(status=401, message='Users not found')
+    return JSONResponse(jsonable_encoder(response), status_code=HTTP_404_NOT_FOUND) 
+
+
+
+
+@router.put("/edit", status_code=200, tags=["Employee"],
+             description="Employee edit API", response_model=ResponseModel)
+@version(1)
+async def edit_employee(data: EditEmployee, db: Session = Depends(get_db)):
+    emp_obj = await employee_edit(data, db)
+    if emp_obj:
+        if emp_obj == 1:
+            response = ResponseModel(status=409, message='Employee does not exist')
+            return JSONResponse(jsonable_encoder(response), status_code=HTTP_409_CONFLICT)   
         response = ResponseModel(data=emp_obj)
         return JSONResponse(jsonable_encoder(response), status_code=HTTP_200_OK)
     
